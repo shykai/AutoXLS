@@ -181,6 +181,9 @@ void CAutoXLSDlg::OnBnClickedRemove()
 
 void CAutoXLSDlg::OnBnClickedSave()
 {
+	GetDlgItem(IDC_Save)->SetWindowText("生成中...");
+	GetDlgItem(IDC_Save)->EnableWindow(FALSE);
+
 	UpdateData(TRUE);
 
 	TCHAR szFilter[] = _T("Excel文件(*.xls)");
@@ -222,15 +225,26 @@ void CAutoXLSDlg::OnBnClickedSave()
 	}
 	inData.isPlusNode = isPlus;
 
-	newExcel.inputExcel(inData);
-	if (newExcel.outputExcel(strFilePath.GetBuffer()))
+	if (inData.nodeList.size() > 0)
 	{
-		MessageBox("保存成功");
+		newExcel.inputExcel(inData);
+		if (newExcel.outputExcel(strFilePath.GetBuffer()))
+		{
+			MessageBox("保存成功");
+		}
+		else
+		{
+			MessageBox("错误：文件保存失败！");
+		}
 	}
 	else
 	{
-		MessageBox("文件保存失败！");
+		MessageBox("错误：题目数不可为空！");
 	}
+
+	GetDlgItem(IDC_Save)->SetWindowText("生成文件");
+	GetDlgItem(IDC_Save)->EnableWindow(TRUE);
+
 }
 
 void CAutoXLSDlg::OnClickedIsplus()
