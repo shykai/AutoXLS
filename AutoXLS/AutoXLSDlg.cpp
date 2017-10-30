@@ -223,7 +223,11 @@ void CAutoXLSDlg::OnBnClickedSave()
 	inData.isPlusNode = isPlus;
 
 	newExcel.inputExcel(inData);
-	if (!newExcel.outputExcel(strFilePath.GetBuffer()))
+	if (newExcel.outputExcel(strFilePath.GetBuffer()))
+	{
+		MessageBox("保存成功");
+	}
+	else
 	{
 		MessageBox("文件保存失败！");
 	}

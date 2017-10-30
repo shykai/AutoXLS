@@ -183,7 +183,7 @@ public:
 	}
 
 	void actStu(worksheet* ws, unsigned32_t row1, unsigned32_t col1,
-		unsigned32_t row2, unsigned32_t col2, unsigned32_t sumColNo)
+		unsigned32_t row2, unsigned32_t col2, unsigned32_t sumColNo, bool isSumTotal)
 	{
 		bool isBule = true;
 
@@ -220,6 +220,10 @@ public:
 			range* lastCol = ws->rangegroup(row1, col2, row2, col2);
 			lastCol->fillstyle(FILL_SOLID);
 			lastCol->fillfgcolor((color_name_t)28);
+			if (isSumTotal)
+			{
+				lastCol->locked(true);
+			}
 		}
 	}
 
@@ -255,7 +259,7 @@ public:
 
 		worksheet* ws = wb.sheet(L"统分表");
 		
-		ws->defaultColwidth(6);
+		ws->defaultColwidth(8);
 		ws->defaultRowHeight(18);
 
 		wb.setColor(196, 215, 155, 9); //title
@@ -312,7 +316,18 @@ public:
 			ws->formula(i, SumCol, score, true);
 		}
 
-		actStu(ws, curRow, 0, curRow + inData.stuCount - 1, curCol, SumCol);
+		if (inData.isPlusNode && inData.isSum)
+		{
+			for (uint32_t i = curRow; i < curRow + inData.stuCount; i++)
+			{
+				cell_t * totalScore = ws->FindCellOrMakeBlank(i, SumCol);
+				cell_t* plusScore = ws->FindCellOrMakeBlank(i, SumCol + 1);
+				expression_node_t * score = maker.op(OP_ADD, maker.cell(*totalScore, CELL_RELATIVE_A1, CELLOP_AS_VALUE), maker.cell(*plusScore, CELL_RELATIVE_A1, CELLOP_AS_VALUE));
+				ws->formula(i, SumCol + 2, score, true);
+			}
+		}
+
+		actStu(ws, curRow, 0, curRow + inData.stuCount - 1, curCol, SumCol, inData.isPlusNode && inData.isSum);
 
 		curRow += inData.stuCount;
 
@@ -394,6 +409,16 @@ public:
 			ws->formula(curRow, curCol, totalFunc, true);
 
 			actFunc(ws, curRow, curCol, curRow, curCol);
+
+			if (inData.isPlusNode && inData.isSum)
+			{
+				cell_t * totalScore = ws->FindCellOrMakeBlank(curRow, curCol);
+				cell_t* plusScore = ws->FindCellOrMakeBlank(curRow, curCol + 1);
+				expression_node_t * score = maker.op(OP_ADD, maker.cell(*totalScore, CELL_RELATIVE_A1, CELLOP_AS_VALUE), maker.cell(*plusScore, CELL_RELATIVE_A1, CELLOP_AS_VALUE));
+				ws->formula(curRow, curCol + 2, score, true);
+
+				actFunc(ws, curRow, curCol + 2, curRow, curCol + 2);
+			}
 		}
 
 		//丢分统计
@@ -485,6 +510,31 @@ public:
 				xf_t* sxf1 = wb.xformat();
 				sxf1->SetFormat(FMT_NUMBER2);
 				ws->formula(curRow + 2, curCol, scorePercent, true, sxf1);
+
+				if (inData.isSum)
+				{
+					curCol += 1;
+
+					//应得分
+					cell_t *oneTotal = ws->FindCellOrMakeBlank(curRow - 2, curCol);
+					expression_node_t *totalFunc = maker.op(xlslib_core::OP_MUL, maker.integer((signed32_t)inData.stuCount), maker.cell(*oneTotal, CELL_RELATIVE_A1, CELLOP_AS_VALUE));
+
+					ws->formula(curRow, curCol, totalFunc, true);
+
+					//实得分
+					cell_t *totalScore = ws->FindCellOrMakeBlank(curRow, curCol);
+					expression_node_t *actScore = buildFuncSum(ws, 2, curCol, 2 + inData.stuCount - 1, curCol);
+
+					ws->formula(curRow + 1, curCol, actScore, true);
+
+					//得分率
+					cell_t *realScore = ws->FindCellOrMakeBlank(curRow + 1, curCol);
+					expression_node_t *scorePercent = maker.op(xlslib_core::OP_DIV, maker.cell(*realScore, CELL_RELATIVE_A1, CELLOP_AS_VALUE), maker.integer(inData.stuCount));
+
+					xf_t* sxf1 = wb.xformat();
+					sxf1->SetFormat(FMT_NUMBER2);
+					ws->formula(curRow + 2, curCol, scorePercent, true, sxf1);
+				}
 			}
 
 			actFunc(ws, curRow, 2, curRow + 2, curCol);
@@ -492,6 +542,23 @@ public:
 			for (uint32_t i = SumCol - 4; i < SumCol + 3; i++)
 			{
 				ws->rowheight(i, 18 * 20);
+			}
+
+			MatchNodes tmpNodes = inData.nodeList;
+			uint32_t tmpCol = 2;
+			while (tmpNodes.size() > 0)
+			{
+				ws->colwidth(tmpCol, 8*256);
+				tmpCol++;
+				
+				if (tmpNodes.front().nodeCount > 0)
+				{
+					tmpNodes.front().nodeCount--;
+				}
+				if (tmpNodes.front().nodeCount == 0)
+				{
+					tmpNodes.pop_front();
+				}
 			}
 		}
 	}
