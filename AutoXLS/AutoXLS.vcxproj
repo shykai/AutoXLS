@@ -30,16 +30,16 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
-    <UseOfMfc>Dynamic</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <UseOfMfc>Static</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
-    <UseOfMfc>Dynamic</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <UseOfMfc>Static</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -88,11 +88,12 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>xlslib</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -133,12 +134,13 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>xlslib</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -191,16 +193,109 @@
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="xlslib.h" />
+    <ClInclude Include="xlslib\ac-config.win32.h" />
+    <ClInclude Include="xlslib\common\overnew.h" />
+    <ClInclude Include="xlslib\common\stringtok.h" />
+    <ClInclude Include="xlslib\common\systype.h" />
+    <ClInclude Include="xlslib\common\timespan.h" />
+    <ClInclude Include="xlslib\common\xlstypes.h" />
+    <ClInclude Include="xlslib\common\xlsys.h" />
+    <ClInclude Include="xlslib\common\xls_poppack.h" />
+    <ClInclude Include="xlslib\common\xls_pshpack1.h" />
+    <ClInclude Include="xlslib\common\xls_pshpack2.h" />
+    <ClInclude Include="xlslib\common\xls_pshpack4.h" />
+    <ClInclude Include="xlslib\oledoc\binfile.h" />
+    <ClInclude Include="xlslib\oledoc\oledoc.h" />
+    <ClInclude Include="xlslib\oledoc\olefs.h" />
+    <ClInclude Include="xlslib\oledoc\oleprop.h" />
+    <ClInclude Include="xlslib\xlslib\biffsection.h" />
+    <ClInclude Include="xlslib\xlslib\blank.h" />
+    <ClInclude Include="xlslib\xlslib\boolean.h" />
+    <ClInclude Include="xlslib\xlslib\cbridge.h" />
+    <ClInclude Include="xlslib\xlslib\cell.h" />
+    <ClInclude Include="xlslib\xlslib\colinfo.h" />
+    <ClInclude Include="xlslib\xlslib\colors.h" />
+    <ClInclude Include="xlslib\xlslib\common.h" />
+    <ClInclude Include="xlslib\xlslib\continue.h" />
+    <ClInclude Include="xlslib\xlslib\datast.h" />
+    <ClInclude Include="xlslib\xlslib\docsumminfo.h" />
+    <ClInclude Include="xlslib\xlslib\err.h" />
+    <ClInclude Include="xlslib\xlslib\extformat.h" />
+    <ClInclude Include="xlslib\xlslib\font.h" />
+    <ClInclude Include="xlslib\xlslib\format.h" />
+    <ClInclude Include="xlslib\xlslib\formtags.h" />
+    <ClInclude Include="xlslib\xlslib\formula.h" />
+    <ClInclude Include="xlslib\xlslib\formula_cell.h" />
+    <ClInclude Include="xlslib\xlslib\formula_const.h" />
+    <ClInclude Include="xlslib\xlslib\formula_estimate.h" />
+    <ClInclude Include="xlslib\xlslib\formula_expr.h" />
+    <ClInclude Include="xlslib\xlslib\globalrec.h" />
+    <ClInclude Include="xlslib\xlslib\HPSF.h" />
+    <ClInclude Include="xlslib\xlslib\index.h" />
+    <ClInclude Include="xlslib\xlslib\label.h" />
+    <ClInclude Include="xlslib\xlslib\merged.h" />
+    <ClInclude Include="xlslib\xlslib\note.h" />
+    <ClInclude Include="xlslib\xlslib\number.h" />
+    <ClInclude Include="xlslib\xlslib\range.h" />
+    <ClInclude Include="xlslib\xlslib\recdef.h" />
+    <ClInclude Include="xlslib\xlslib\record.h" />
+    <ClInclude Include="xlslib\xlslib\rectypes.h" />
+    <ClInclude Include="xlslib\xlslib\row.h" />
+    <ClInclude Include="xlslib\xlslib\sheetrec.h" />
+    <ClInclude Include="xlslib\xlslib\summinfo.h" />
+    <ClInclude Include="xlslib\xlslib\tostr.h" />
+    <ClInclude Include="xlslib\xlslib\unit.h" />
+    <ClInclude Include="xlslib\xlslib\workbook.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AutoXLS.cpp" />
     <ClCompile Include="AutoXLSDlg.cpp" />
+    <ClCompile Include="MakeXLS.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="xlslib\common\overnew.cpp" />
+    <ClCompile Include="xlslib\oledoc\binfile.cpp" />
+    <ClCompile Include="xlslib\oledoc\oledoc.cpp" />
+    <ClCompile Include="xlslib\oledoc\olefs.cpp" />
+    <ClCompile Include="xlslib\oledoc\oleprop.cpp" />
+    <ClCompile Include="xlslib\xlslib\assert_assist.cpp" />
+    <ClCompile Include="xlslib\xlslib\blank.cpp" />
+    <ClCompile Include="xlslib\xlslib\boolean.cpp" />
+    <ClCompile Include="xlslib\xlslib\cbridge.cpp" />
+    <ClCompile Include="xlslib\xlslib\cell.cpp" />
+    <ClCompile Include="xlslib\xlslib\colinfo.cpp" />
+    <ClCompile Include="xlslib\xlslib\colors.cpp" />
+    <ClCompile Include="xlslib\xlslib\continue.cpp" />
+    <ClCompile Include="xlslib\xlslib\datast.cpp" />
+    <ClCompile Include="xlslib\xlslib\docsumminfo.cpp" />
+    <ClCompile Include="xlslib\xlslib\err.cpp" />
+    <ClCompile Include="xlslib\xlslib\extformat.cpp" />
+    <ClCompile Include="xlslib\xlslib\font.cpp" />
+    <ClCompile Include="xlslib\xlslib\format.cpp" />
+    <ClCompile Include="xlslib\xlslib\formula.cpp" />
+    <ClCompile Include="xlslib\xlslib\formula_cell.cpp" />
+    <ClCompile Include="xlslib\xlslib\formula_estimate.cpp" />
+    <ClCompile Include="xlslib\xlslib\formula_expr.cpp" />
+    <ClCompile Include="xlslib\xlslib\globalrec.cpp" />
+    <ClCompile Include="xlslib\xlslib\HPSF.cpp" />
+    <ClCompile Include="xlslib\xlslib\index.cpp" />
+    <ClCompile Include="xlslib\xlslib\label.cpp" />
+    <ClCompile Include="xlslib\xlslib\merged.cpp" />
+    <ClCompile Include="xlslib\xlslib\note.cpp" />
+    <ClCompile Include="xlslib\xlslib\number.cpp" />
+    <ClCompile Include="xlslib\xlslib\range.cpp" />
+    <ClCompile Include="xlslib\xlslib\recdef.cpp" />
+    <ClCompile Include="xlslib\xlslib\record.cpp" />
+    <ClCompile Include="xlslib\xlslib\row.cpp" />
+    <ClCompile Include="xlslib\xlslib\sheetrec.cpp" />
+    <ClCompile Include="xlslib\xlslib\summinfo.cpp" />
+    <ClCompile Include="xlslib\xlslib\unit.cpp" />
+    <ClCompile Include="xlslib\xlslib\workbook.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="AutoXLS.rc" />
