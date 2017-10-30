@@ -355,11 +355,11 @@ public:
 
 		ws->rowheight(0, 20 * 20);
 		ws->rowheight(1, 20 * 20);
-		for (uint32_t i = 2; i <= curRow; i++)
+		for (uint32_t i = 2; i <= curRow + 1; i++)
 		{
 			ws->rowheight(i, 18 * 20);
 		}
-		ws->colwidth(0, 6*256);
+		ws->colwidth(0, 4*256);
 		ws->colwidth(1, 12*256);
 
 
