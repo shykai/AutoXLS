@@ -329,6 +329,9 @@
     <ClCompile Include="xlslib\oledoc\oleprop.cpp">
       <Filter>源文件\xlslib</Filter>
     </ClCompile>
+    <ClCompile Include="MakeXLSv2.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="AutoXLS.rc">
