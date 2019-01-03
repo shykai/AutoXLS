@@ -7,7 +7,7 @@
 #include "AutoXLSDlg.h"
 #include "afxdialogex.h"
 
-#include "MakeXls.cpp"
+#include "MakeXls_V2.cpp"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -200,30 +200,36 @@ void CAutoXLSDlg::OnBnClickedSave()
 	// 如果点击了文件对话框上的“保存”按钮，则将选择的文件路径显示到编辑框里   
 	strFilePath = fileDlg.GetPathName();
 
-	MatchExcel newExcel;
+	MatchExcel_V2 newExcel;
 
-	MatchExcel::MatchMap inData;
-	inData.stuCount = stuCount;
-	inData.totalTitle = CA2W((LPCSTR)totalTitle);
-	
-	inData.isPlusNode = isPlus;
-	inData.plusTitle = CA2W((LPCSTR)plusTitle);
+	MatchMap inData;
+	inData.stuCount = 35;
+	inData.isSum = true;
 
-	inData.isSum = isSumScore;
-
-	for (int i = 0; i < titleList.GetItemCount(); i++)
 	{
-		CString name = titleList.GetItemText(i, 1);
+		MatchNodes firstClassNodes;
+		firstClassNodes.push_back(MatchNode(L"1", 1));
+		firstClassNodes.push_back(MatchNode(L"2", 1));
+		firstClassNodes.push_back(MatchNode(L"3", 1));
+		firstClassNodes.push_back(MatchNode(L"4", 1));
+		firstClassNodes.push_back(MatchNode(L"5", 10));
+		firstClassNodes.push_back(MatchNode(L"6", 5));
+		firstClassNodes.push_back(MatchNode(L"7", 1));
+		firstClassNodes.push_back(MatchNode(L"8", 1));
+		firstClassNodes.push_back(MatchNode(L"9", 5));
 
-		CString titleNum = titleList.GetItemText(i, 2);
-		int count = atoi(titleNum);
-
-		std::wstring wStr = CA2W((LPCSTR)name);
-
-		inData.nodeList.push_back(MatchExcel::MatchNode(wStr, count));
-
+		MatchClass firstClass(L"A", firstClassNodes);
+		inData.nodeList.push_back(firstClass);
 	}
-	inData.isPlusNode = isPlus;
+
+	{
+		MatchNodes firstClassNodes;
+		firstClassNodes.push_back(MatchNode(L"B", 1));
+
+		MatchClass firstClass(L"B");
+		inData.nodeList.push_back(firstClass);
+	}
+
 
 	if (inData.nodeList.size() > 0)
 	{

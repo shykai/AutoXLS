@@ -387,22 +387,6 @@ public:
 
 private:
 
-	std::string toString(uint32_t valInt)
-	{
-		char tmp[8] = { 0 };
-		snprintf(tmp, 8, "%u", valInt);
-
-		return std::string(tmp);
-	};
-
-	std::string toColChar(uint32_t col)
-	{
-		char tmp[2] = { 0 };
-		tmp[0] = col;
-
-		return std::string(tmp);
-	};
-
 	expression_node_t * buildFuncSum(worksheet* ws, /*uint32_t target_row, uint32_t target_col,*/
 		uint32_t first_row, uint32_t first_col, uint32_t last_row, uint32_t last_col)
 	{

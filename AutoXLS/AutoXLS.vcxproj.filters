@@ -19,6 +19,9 @@
     <Filter Include="源文件\xlslib">
       <UniqueIdentifier>{33c11a5c-c9dd-4b34-b14e-ededc88aa451}</UniqueIdentifier>
     </Filter>
+    <Filter Include="源文件\FormatV2">
+      <UniqueIdentifier>{114c8ba0-7d42-4125-9818-d2ba9ae6eab0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -201,6 +204,12 @@
     <ClInclude Include="xlslib\oledoc\oleprop.h">
       <Filter>源文件\xlslib</Filter>
     </ClInclude>
+    <ClInclude Include="MatchFormatter.h">
+      <Filter>源文件\FormatV2</Filter>
+    </ClInclude>
+    <ClInclude Include="PublicDef.h">
+      <Filter>源文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AutoXLS.cpp">
@@ -210,9 +219,6 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="stdafx.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="MakeXLS.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="xlslib\xlslib\assert_assist.cpp">
@@ -329,8 +335,11 @@
     <ClCompile Include="xlslib\oledoc\oleprop.cpp">
       <Filter>源文件\xlslib</Filter>
     </ClCompile>
-    <ClCompile Include="MakeXLSv2.cpp">
+    <ClCompile Include="MakeXLS_V2.cpp">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="MatchFormatter.cpp">
+      <Filter>源文件\FormatV2</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
