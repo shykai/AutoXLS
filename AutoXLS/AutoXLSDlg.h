@@ -6,6 +6,9 @@
 #include "afxwin.h"
 #include "afxcmn.h"
 
+#include "PublicDef.h"
+
+#include <map>
 
 // CAutoXLSDlg ¶Ô»°¿ò
 class CAutoXLSDlg : public CDialogEx
@@ -71,4 +74,25 @@ private:
 	}
 public:
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
+	afx_msg void OnBnClickedRadioClassType();
+	afx_msg void OnCbnSelchangeClass();
+	afx_msg void OnBnClickedClassAdd();
+	afx_msg void OnBnClickedClassDel();
+	afx_msg void OnBnClickedClassReset();
+	CComboBox classList;
+	int m_classType;
+
+private:
+	struct strucNode
+	{
+		CString className;
+		MatchClassType classType;
+		MatchNodes nodeList;
+	};
+	typedef std::list<strucNode*> ClassMap;
+	ClassMap classMap;
+
+	strucNode* nowNode;
+
+	void refreshNodeList();
 };

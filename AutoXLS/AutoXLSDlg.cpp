@@ -7,7 +7,7 @@
 #include "AutoXLSDlg.h"
 #include "afxdialogex.h"
 
-#include "MakeXls_V2.cpp"
+#include "MakeXLS_V2.cpp"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -27,6 +27,8 @@ CAutoXLSDlg::CAutoXLSDlg(CWnd* pParent /*=NULL*/)
 	, plusTitle(_T("附加题"))
 	, totalTitle(_T("总分"))
 	, isSumScore(FALSE)
+	, m_classType(0)
+	, nowNode(NULL)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -36,12 +38,14 @@ void CAutoXLSDlg::DoDataExchange(CDataExchange* pDX)
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Text(pDX, IDC_Title, titleName);
 	DDX_Text(pDX, IDC_TitleCount, titleCount);
-	DDX_Check(pDX, IDC_IsPlus, isPlus);
+	// 	DDX_Check(pDX, IDC_IsPlus, isPlus);
 	DDX_Control(pDX, IDC_LIST, titleList);
 	DDX_Text(pDX, IDC_StuCount, stuCount);
-	DDX_Text(pDX, IDC_PlusTitle, plusTitle);
-	DDX_Text(pDX, IDC_TotalTitle, totalTitle);
+	// 	DDX_Text(pDX, IDC_PlusTitle, plusTitle);
+	// 	DDX_Text(pDX, IDC_TotalTitle, totalTitle);
 	DDX_Check(pDX, IDC_IsSum, isSumScore);
+	DDX_Control(pDX, IDC_COMBO1, classList);
+	DDX_Radio(pDX, IDC_RADIO1, m_classType);
 }
 
 BEGIN_MESSAGE_MAP(CAutoXLSDlg, CDialogEx)
@@ -53,6 +57,12 @@ BEGIN_MESSAGE_MAP(CAutoXLSDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_Save, &CAutoXLSDlg::OnBnClickedSave)
 	ON_NOTIFY(NM_CLICK, IDC_LIST, &CAutoXLSDlg::OnNMClickList)
 	ON_BN_CLICKED(IDC_IsPlus, &CAutoXLSDlg::OnClickedIsplus)
+	ON_BN_CLICKED(IDC_RADIO1, &CAutoXLSDlg::OnBnClickedRadioClassType)
+	ON_BN_CLICKED(IDC_RADIO2, &CAutoXLSDlg::OnBnClickedRadioClassType)
+	ON_BN_CLICKED(IDC_BUTTON6, &CAutoXLSDlg::OnBnClickedClassReset)
+	ON_CBN_SELCHANGE(IDC_COMBO1, &CAutoXLSDlg::OnCbnSelchangeClass)
+	ON_BN_CLICKED(IDC_BUTTON4, &CAutoXLSDlg::OnBnClickedClassAdd)
+	ON_BN_CLICKED(IDC_BUTTON5, &CAutoXLSDlg::OnBnClickedClassDel)
 END_MESSAGE_MAP()
 
 
@@ -123,6 +133,11 @@ void CAutoXLSDlg::OnBnClickedAdd()
 {
 	UpdateData(TRUE);
 
+	if (nowNode == NULL)
+	{
+		return;
+	}
+
 	int rowNo = titleList.GetItemCount();
 
 
@@ -130,6 +145,10 @@ void CAutoXLSDlg::OnBnClickedAdd()
 	
 	titleList.SetItemText(rowNo, 1, titleName);//设置数据
 	titleList.SetItemText(rowNo, 2, toString(titleCount));//设置数据
+
+	std::wstring wStr = CA2W((LPCSTR)titleName);
+
+	nowNode->nodeList.push_back(MatchNode(wStr, titleCount));
 
 	titleName = "";
 	titleCount = 1;
@@ -144,6 +163,11 @@ void CAutoXLSDlg::OnBnClickedModify()
 {
 	UpdateData(TRUE);
 
+	if (nowNode == NULL)
+	{
+		return;
+	}
+
 	POSITION pos = titleList.GetFirstSelectedItemPosition();
 	if (pos != NULL)
 	{
@@ -153,6 +177,8 @@ void CAutoXLSDlg::OnBnClickedModify()
 		titleList.SetItemText(rowNo, 1, titleName);//设置数据
 		titleList.SetItemText(rowNo, 2, toString(titleCount));//设置数据
 
+		refreshNodeList();
+
 		UpdateData(FALSE);
 	}
 }
@@ -161,6 +187,11 @@ void CAutoXLSDlg::OnBnClickedModify()
 void CAutoXLSDlg::OnBnClickedRemove()
 {
 	UpdateData(TRUE);
+
+	if (nowNode == NULL)
+	{
+		return;
+	}
 
 	int nItem = -1;
 	POSITION pos;
@@ -174,6 +205,8 @@ void CAutoXLSDlg::OnBnClickedRemove()
 			titleList.DeleteItem(nItem);
 		}
 	}
+
+	refreshNodeList();
 
 	UpdateData(FALSE);
 }
@@ -194,6 +227,8 @@ void CAutoXLSDlg::OnBnClickedSave()
 	// 显示保存文件对话框   
 	if (IDOK != fileDlg.DoModal())
 	{
+		GetDlgItem(IDC_Save)->SetWindowText("生成文件");
+		GetDlgItem(IDC_Save)->EnableWindow(TRUE);
 
 		return;
 	}
@@ -203,32 +238,40 @@ void CAutoXLSDlg::OnBnClickedSave()
 	MatchExcel_V2 newExcel;
 
 	MatchMap inData;
-	inData.stuCount = 35;
-	inData.isSum = true;
+	inData.stuCount = stuCount;
+	inData.isSum = isSumScore;
 
+	for (ClassMap::const_iterator iter = classMap.begin(); iter != classMap.end(); iter++)
 	{
-		MatchNodes firstClassNodes;
-		firstClassNodes.push_back(MatchNode(L"1", 1));
-		firstClassNodes.push_back(MatchNode(L"2", 1));
-		firstClassNodes.push_back(MatchNode(L"3", 1));
-		firstClassNodes.push_back(MatchNode(L"4", 1));
-		firstClassNodes.push_back(MatchNode(L"5", 10));
-		firstClassNodes.push_back(MatchNode(L"6", 5));
-		firstClassNodes.push_back(MatchNode(L"7", 1));
-		firstClassNodes.push_back(MatchNode(L"8", 1));
-		firstClassNodes.push_back(MatchNode(L"9", 5));
+		std::wstring wStr = CA2W((LPCSTR)(*iter)->className);
 
-		MatchClass firstClass(L"A", firstClassNodes);
-		inData.nodeList.push_back(firstClass);
+		MatchClass classNode(wStr, (*iter)->nodeList, (*iter)->classType);
+		inData.nodeList.push_back(classNode);
 	}
 
-	{
-		MatchNodes firstClassNodes;
-		firstClassNodes.push_back(MatchNode(L"B", 1));
-
-		MatchClass firstClass(L"B");
-		inData.nodeList.push_back(firstClass);
-	}
+// 	{
+// 		MatchNodes firstClassNodes;
+// 		firstClassNodes.push_back(MatchNode(L"1", 1));
+// 		firstClassNodes.push_back(MatchNode(L"2", 1));
+// 		firstClassNodes.push_back(MatchNode(L"3", 1));
+// 		firstClassNodes.push_back(MatchNode(L"4", 1));
+// 		firstClassNodes.push_back(MatchNode(L"5", 10));
+// 		firstClassNodes.push_back(MatchNode(L"6", 5));
+// 		firstClassNodes.push_back(MatchNode(L"7", 1));
+// 		firstClassNodes.push_back(MatchNode(L"8", 1));
+// 		firstClassNodes.push_back(MatchNode(L"9", 5));
+// 
+// 		MatchClass firstClass(L"A", firstClassNodes);
+// 		inData.nodeList.push_back(firstClass);
+// 	}
+// 
+// 	{
+// 		MatchNodes firstClassNodes;
+// 		firstClassNodes.push_back(MatchNode(L"B", 1));
+// 
+// 		MatchClass firstClass(L"B");
+// 		inData.nodeList.push_back(firstClass);
+// 	}
 
 
 	if (inData.nodeList.size() > 0)
@@ -307,5 +350,165 @@ BOOL CAutoXLSDlg::PreTranslateMessage(MSG* pMsg)
 		return true;
 
 	return CDialogEx::PreTranslateMessage(pMsg);
+}
+
+
+
+void CAutoXLSDlg::OnBnClickedRadioClassType()
+{
+	UpdateData(TRUE);
+	MatchClassType nowType = Class_Deduct;
+	if (m_classType == 0)
+	{
+		nowType = Class_Deduct;
+	}
+	else if (m_classType == 1)
+	{
+		nowType = Class_Add;
+	}
+
+	if (nowNode)
+	{
+		nowNode->classType = nowType;
+	}
+}
+
+
+
+void CAutoXLSDlg::OnCbnSelchangeClass()
+{
+	// TODO: 在此添加控件通知处理程序代码
+
+	int nIndex = classList.GetCurSel();
+	if (nIndex == -1)
+	{
+		return;
+	}
+	
+	int nPos = 0;
+	ClassMap::iterator iter = classMap.begin();
+	while (iter != classMap.end())
+	{
+		if (nPos == nIndex)
+		{
+			nowNode = *iter;
+			break;
+		}
+
+		nPos++;
+		iter++;
+	}
+
+	titleList.DeleteAllItems();
+
+	int insertPos = 0;
+	for (MatchNodes::iterator iter = nowNode->nodeList.begin(); iter != nowNode->nodeList.end(); iter++)
+	{
+		titleList.InsertItem(insertPos, toString(insertPos + 1));//插入行
+
+		titleList.SetItemText(insertPos, 1, CString(iter->nodeName.c_str()));//设置数据
+		titleList.SetItemText(insertPos, 2, toString(iter->nodeCount));//设置数据
+
+		insertPos++;
+	}
+
+	m_classType = nowNode->classType;
+
+	UpdateData(FALSE);
+}
+
+
+
+
+void CAutoXLSDlg::OnBnClickedClassAdd()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	UpdateData(TRUE);
+
+	CString inputText;
+	classList.GetWindowTextA(inputText);
+
+	int addCol = classList.GetCount();
+
+	classList.InsertString(addCol, inputText);
+	strucNode* newNode = new strucNode();
+	newNode->className = inputText;
+	newNode->classType = (MatchClassType)m_classType;
+
+	classMap.push_back(newNode);
+
+	classList.SetCurSel(addCol);
+
+	OnCbnSelchangeClass();
+}
+
+
+void CAutoXLSDlg::OnBnClickedClassDel()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	UpdateData(TRUE);
+
+	int nIndex = classList.GetCurSel();
+	if (nIndex == -1)
+	{
+		return;
+	}
+
+	int nPos = 0;
+	ClassMap::iterator iter = classMap.begin();	
+	while (iter != classMap.end())
+	{
+		if (nPos == nIndex)
+		{
+			delete (*iter);
+			classMap.erase(iter);
+			break;
+		}
+
+		nPos++;
+		iter++;
+	}
+
+	classList.DeleteString(nIndex);
+	nowNode = NULL;
+}
+
+void CAutoXLSDlg::OnBnClickedClassReset()
+{
+
+	// TODO: 在此添加控件通知处理程序代码
+
+	classList.ResetContent();
+
+	for (ClassMap::iterator iter = classMap.begin(); iter != classMap.end(); iter++)
+	{
+		delete (*iter);
+	}
+	classMap.clear();
+	titleList.DeleteAllItems();
+
+	UpdateData(FALSE);
+}
+
+void CAutoXLSDlg::refreshNodeList()
+{
+	if (nowNode == NULL)
+	{
+		return;
+	}
+
+	nowNode->nodeList.clear();
+	for (int i = 0; i < titleList.GetItemCount(); i++)
+	{
+		CString name = titleList.GetItemText(i, 1);
+
+		CString titleNum = titleList.GetItemText(i, 2);
+		int count = atoi(titleNum);
+
+		std::wstring wStr = CA2W((LPCSTR)name);
+
+		nowNode->nodeList.push_back(MatchNode(wStr, count));
+
+	}
 }
 

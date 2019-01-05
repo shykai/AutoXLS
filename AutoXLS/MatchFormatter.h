@@ -120,6 +120,49 @@ public:
 
 };
 
+class TextAera : public ExcelArea
+{
+public:
+	TextAera(uint32_t row1, uint32_t col1,
+		uint32_t row2, uint32_t col2, const std::wstring& _textString)
+		:ExcelArea(row1, col1, row2, col2)
+		, textString(_textString)
+	{
+
+	}
+
+	~TextAera()
+	{
+		build(AeraManager::instance()->getWS(), AeraManager::instance()->getMaker(), AeraManager::instance()->getWB());
+		act(AeraManager::instance()->getWS());
+	}
+
+	virtual void build(worksheet* ws, expression_node_factory_t& maker, workbook* wb) 
+	{
+		ws->merge(firstRow, firstCol, lastRow, lastCol);
+		ws->label(firstRow, firstCol, textString);
+	};
+	virtual void act(worksheet* ws)
+	{
+		range* titleRange = ws->rangegroup(firstRow, firstCol, lastRow, lastCol);
+
+		titleRange->fontbold(BOLDNESS_BOLD);
+		titleRange->fillstyle(FILL_SOLID);
+		titleRange->fillfgcolor((color_name_t)40);
+		titleRange->halign(HALIGN_CENTER);
+		titleRange->valign(VALIGN_CENTER);
+		titleRange->borderstyle(BORDER_BOTTOM, BORDER_THIN);
+		titleRange->borderstyle(BORDER_TOP, BORDER_THIN);
+		titleRange->borderstyle(BORDER_LEFT, BORDER_THIN);
+		titleRange->borderstyle(BORDER_RIGHT, BORDER_THIN);
+		titleRange->wrap(true);
+
+		titleRange->locked(true);
+	}
+
+private:
+	std::wstring textString;
+};
 
 //标题区域
 class TitleAera : public ExcelArea
@@ -191,6 +234,7 @@ public:
 		titleRange->borderstyle(BORDER_TOP, BORDER_THIN);
 		titleRange->borderstyle(BORDER_LEFT, BORDER_THIN);
 		titleRange->borderstyle(BORDER_RIGHT, BORDER_THIN);
+		titleRange->wrap(true);
 
 		titleRange->locked(true);
 
@@ -246,6 +290,14 @@ public:
 class ScoreSumArea : public ExcelArea
 {
 public:
+	ScoreSumArea(const InputArea &_input, uint32_t row1, uint32_t col1,
+		uint32_t row2, uint32_t col2)
+		:ExcelArea(row1, col1, row2, col2)
+	{
+		expression_node_t * sumScore = AeraManager::instance()->buildFuncSum(_input.firstRow, _input.firstCol, _input.lastRow, _input.lastCol);
+		AeraManager::instance()->getWS()->formula(firstRow, firstCol, sumScore, true);
+	}
+
 	ScoreSumArea(const InputArea &_input, uint32_t _rowTotalScord)
 		:ExcelArea(_input.firstRow, _input.lastCol + 1, _input.lastRow, _input.lastCol + 1)
 	{
@@ -319,14 +371,15 @@ class LossSumAera : public ExcelArea
 public:
 	LossSumAera(const InputArea &_input)
 		:ExcelArea(_input.lastRow +1, _input.firstCol, _input.lastRow+2, _input.lastCol)
+		, sumFirstRow(_input.firstRow)
+		, sumLastRow(_input.lastRow)
 	{
 
 	}
 
-	void init(const MatchNodes& nodeList, uint32_t totalScoreRow)
+	void init(const MatchNodes& nodeList)
 	{
 		_nodeLists = nodeList;
-		_totalScoreRow = totalScoreRow;
 	}
 
 	~LossSumAera()
@@ -346,21 +399,21 @@ public:
 			{
 				for (uint32_t i = 0; i < iter->nodeCount; i++)
 				{
-					expression_node_t * f = AeraManager::instance()->buildFuncSum( /*curRow, curCol + i,*/ 2, curCol + i, _totalScoreRow, curCol + i);
+					expression_node_t * f = AeraManager::instance()->buildFuncSum(sumFirstRow, curCol + i, sumLastRow, curCol + i);
 					ws->formula(curRow, curCol + i, f, true);
 				}
 
 				ws->merge(curRow + 1, curCol, curRow + 1, curCol + iter->nodeCount - 1);
 
 
-				expression_node_t * f = AeraManager::instance()->buildFuncSum( /*curRow + 1, curCol,*/ curRow, curCol, curRow, curCol + iter->nodeCount - 1);
+				expression_node_t * f = AeraManager::instance()->buildFuncSum( curRow, curCol, curRow, curCol + iter->nodeCount - 1);
 				ws->formula(curRow + 1, curCol, f, true);
 
 			}
 			else
 			{
 				ws->merge(curRow, curCol, curRow + 1, curCol);
-				expression_node_t * f = AeraManager::instance()->buildFuncSum( /*curRow, curCol,*/ 2, curCol, _totalScoreRow, curCol);
+				expression_node_t * f = AeraManager::instance()->buildFuncSum(sumFirstRow, curCol, sumLastRow, curCol);
 				ws->formula(curRow, curCol, f, true);
 			}
 			curCol += iter->nodeCount;
@@ -371,6 +424,8 @@ public:
 	{
 		range* titleRange = ws->rangegroup(firstRow, firstCol, lastRow, lastCol);
 		titleRange->fillstyle(FILL_SOLID);
+		titleRange->halign(HALIGN_CENTER);
+		titleRange->valign(VALIGN_CENTER);
 		titleRange->fillfgcolor((color_name_t)17);
 		titleRange->borderstyle(BORDER_BOTTOM, BORDER_THIN);
 		titleRange->borderstyle(BORDER_TOP, BORDER_THIN);
@@ -382,7 +437,7 @@ public:
 
 private:
 	MatchNodes _nodeLists;
-	uint32_t _totalScoreRow;
+	uint32_t sumFirstRow, sumLastRow;
 };
 
 //总丢分总和计算
@@ -398,16 +453,40 @@ public:
 
 	}
 
-	LossTotalAera(const InputArea& _input)
+	LossTotalAera(const InputArea& _input, uint32_t rowTotalScore, uint32_t stuCount)
 		:ExcelArea(_input.lastRow + 1, _input.firstCol, _input.lastRow + 2, _input.lastCol )
 	{
+		expression_node_factory_t& maker = AeraManager::instance()->getMaker();
+		worksheet* ws = AeraManager::instance()->getWS();
 
+		ws->merge(firstRow, firstCol, lastRow, lastCol);
+
+		cell_t *oneTotal = ws->FindCellOrMakeBlank(rowTotalScore, firstCol);
+		expression_node_t *totalFunc = maker.op(xlslib_core::OP_MUL, maker.integer((signed32_t)stuCount), maker.cell(*oneTotal, CELL_RELATIVE_A1, CELLOP_AS_VALUE));
+
+		expression_node_t * scoreFunc = AeraManager::instance()->buildFuncSum(_input.firstRow, _input.firstCol, _input.lastRow, _input.lastCol);
+
+		expression_node_t * losFunc = maker.op(xlslib_core::OP_SUB, totalFunc, scoreFunc);
+
+		ws->formula(firstRow, firstCol, losFunc, true);
 	}
 
-	LossTotalAera(const ScoreSumArea& _scoreSum)
+	LossTotalAera(const ScoreSumArea& _scoreSum, uint32_t rowTotalScore, uint32_t stuCount)
 		:ExcelArea(_scoreSum.lastRow + 1, _scoreSum.firstCol, _scoreSum.lastRow + 2, _scoreSum.lastCol)
 	{
+		expression_node_factory_t& maker = AeraManager::instance()->getMaker();
+		worksheet* ws = AeraManager::instance()->getWS();
 
+		ws->merge(firstRow, firstCol, lastRow, lastCol);
+
+		cell_t *oneTotal = ws->FindCellOrMakeBlank(rowTotalScore, firstCol);
+		expression_node_t *totalFunc = maker.op(xlslib_core::OP_MUL, maker.integer((signed32_t)stuCount), maker.cell(*oneTotal, CELL_RELATIVE_A1, CELLOP_AS_VALUE));
+		
+		expression_node_t * scoreFunc = AeraManager::instance()->buildFuncSum(_scoreSum.firstRow, _scoreSum.firstCol, _scoreSum.lastRow, _scoreSum.lastCol);
+
+		expression_node_t * losFunc = maker.op(xlslib_core::OP_SUB, totalFunc, scoreFunc);
+
+		ws->formula(firstRow, firstCol, losFunc, true);
 	}
 
 	~LossTotalAera()
@@ -443,6 +522,7 @@ public:
 		:ExcelArea(rowTotalScore +2, _lostSum.firstCol, rowTotalScore + 4, _lostSum.lastCol)
 		,_rowTotalScore(rowTotalScore)
 		, _rowLossScore(_lostSum.firstRow)
+		, staticsType(Statics_ScorePercent)
 	{
 
 	}
@@ -451,6 +531,7 @@ public:
 		:ExcelArea(rowTotalScore + 2, _lostTotal.firstCol, rowTotalScore + 4, _lostTotal.lastCol)
 		,_rowTotalScore(rowTotalScore)
 		, _rowLossScore(_lostTotal.firstRow)
+		, staticsType(Statics_Average)
 	{
 
 	}
@@ -485,13 +566,26 @@ public:
 
 			ws->formula(curRow + 1, curCol, actScore, true);
 
-			//得分率
-			cell_t *realScore = ws->FindCellOrMakeBlank(curRow + 1, curCol);
-			expression_node_t *scorePercent = maker.op(xlslib_core::OP_DIV, maker.cell(*realScore, CELL_RELATIVE_A1, CELLOP_AS_VALUE), maker.cell(*totalScore, CELL_RELATIVE_A1, CELLOP_AS_VALUE));
+			if (staticsType == Statics_ScorePercent)
+			{
+				//得分率
+				cell_t *realScore = ws->FindCellOrMakeBlank(curRow + 1, curCol);
+				expression_node_t *scorePercent = maker.op(xlslib_core::OP_DIV, maker.cell(*realScore, CELL_RELATIVE_A1, CELLOP_AS_VALUE), maker.cell(*totalScore, CELL_RELATIVE_A1, CELLOP_AS_VALUE));
 
-			xf_t* sxf1 = wb->xformat();
-			sxf1->SetFormat(FMT_PERCENT2);
-			ws->formula(curRow + 2, curCol, scorePercent, true, sxf1);
+				xf_t* sxf1 = wb->xformat();
+				sxf1->SetFormat(FMT_PERCENT2);
+				ws->formula(curRow + 2, curCol, scorePercent, true, sxf1);
+			}
+			else if (staticsType == Statics_Average)
+			{
+				//平均分
+				cell_t *realScore = ws->FindCellOrMakeBlank(curRow + 1, curCol);
+				expression_node_t *scorePercent = maker.op(xlslib_core::OP_DIV, maker.cell(*realScore, CELL_RELATIVE_A1, CELLOP_AS_VALUE), maker.integer((signed32_t)_stuCount));
+
+				xf_t* sxf1 = wb->xformat();
+				sxf1->SetFormat(FMT_NUMBER2);
+				ws->formula(curRow + 2, curCol, scorePercent, true, sxf1);
+			}
 		}
 	}
 
@@ -512,4 +606,10 @@ private:
 	uint32_t _rowTotalScore;
 	uint32_t _rowLossScore;
 	uint32_t _stuCount;
+
+	enum StaticsType
+	{
+		Statics_ScorePercent = 0,
+		Statics_Average,
+	}staticsType;
 };

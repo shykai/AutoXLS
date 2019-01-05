@@ -24,7 +24,7 @@ typedef std::list<MatchNode> MatchNodes;
 
 enum MatchClassType
 {
-	Class_Deduct, //按失分统计
+	Class_Deduct = 0, //按失分统计
 	Class_Add //按得分统计
 };
 struct MatchClass
