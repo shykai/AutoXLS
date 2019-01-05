@@ -29,8 +29,8 @@ public:
 
 	void doExec(const MatchMap & inData)
 	{
-		std::list<ExcelArea> sumScoreList;
-		std::list<ExcelArea> totalScoreList;
+		std::list<struExcelAera> sumScoreList;
+		std::list<struExcelAera> totalScoreList;
 
 		uint32_t nowCol = 0;
 		uint32_t rowFirstStatics = 10 + inData.stuCount;
@@ -72,14 +72,14 @@ public:
 			}
 
 			nowRow = rowFirstStatics;
-			TitleAera scoreTitle(nowRow, nowCol, classIter->matchCount);
+			TitleAera scoreTitle(nowRow, nowCol, classIter->matchCount + (classIter->matchType == Class_Deduct ? 1 : 0));
 			classTitle.init(classIter->className, classIter->nodeLists, classIter->matchType);
 			nowRow = scoreTitle.lastRow + 1;
 
 			InputArea scoreTotalAera(nowRow, nowCol, 1, classIter->matchCount);
 			if (classIter->matchType == Class_Deduct)
 			{
-				ExcelArea scoreAera(scoreTotalAera.firstRow, scoreTotalAera.lastCol + 1, scoreTotalAera.lastRow, scoreTotalAera.lastCol + 1);
+				struExcelAera scoreAera(scoreTotalAera.firstRow, scoreTotalAera.lastCol + 1, scoreTotalAera.lastRow, scoreTotalAera.lastCol + 1);
 // 				LossTotalAera scoreAera(scoreTotalAera); //?
 				totalScoreList.push_back(scoreAera);
 			}
@@ -90,12 +90,12 @@ public:
 
 			if (classIter->matchType == Class_Deduct)
 			{
-				StaticsAera lossStatic(*lossSumPtr, rowTotalScore);
-				StaticsAera lossTotalStatic(*lossTotalPtr, rowTotalScore);
+				StaticsAera lossStatic(*lossSumPtr, rowTotalScore); lossStatic.init(inData.stuCount);
+				StaticsAera lossTotalStatic(*lossTotalPtr, rowTotalScore); lossTotalStatic.init(inData.stuCount);
 			}
 			else if (classIter->matchType == Class_Add)
 			{
-				StaticsAera lossTotalStatic(*lossTotalPtr, rowTotalScore);
+				StaticsAera lossTotalStatic(*lossTotalPtr, rowTotalScore); lossTotalStatic.init(inData.stuCount);
 			}
 
 			nowCol += classIter->matchCount;
@@ -139,12 +139,12 @@ public:
 
 // 	void inputExcel(const MatchMap & inData)
 // 	{
-// 		uint32_t SumCol; //ÊÄªÂàÜÂàó
+// 		uint32_t SumCol; //◊‹∑÷¡–
 // 
-// 		uint32_t lossRow; //Â§±ÂàÜË°å
+// 		uint32_t lossRow; // ß∑÷––
 // 
 // 
-// 		worksheet* ws = wb.sheet(L"ÁªüÂàÜË°®");
+// 		worksheet* ws = wb.sheet(L"Õ≥∑÷±Ì");
 // 
 // 		ws->defaultColwidth(8);
 // 		ws->defaultRowHeight(18);
@@ -157,24 +157,24 @@ public:
 // 		uint32_t curCol = 0;
 // 		uint32_t curRow = 0;
 // 
-// 		//Â≠¶Âè∑
+// 		//—ß∫≈
 // 		ws->merge(curRow, curCol, curRow + 1, curCol);
-// 		ws->label(curRow, curCol, L"Â≠¶Âè∑");
+// 		ws->label(curRow, curCol, L"—ß∫≈");
 // 		curCol++;
 // 
-// 		//ÂßìÂêç
+// 		//–’√˚
 // 		ws->merge(curRow, curCol, curRow + 1, curCol);
-// 		ws->label(curRow, curCol, L"ÂßìÂêç");
+// 		ws->label(curRow, curCol, L"–’√˚");
 // 		curCol++;
 // 
 // 		buildTitle(ws, curRow, curCol, inData.nodeList);
 // 
-// 		//ÊÄªÂàÜ
+// 		//◊‹∑÷
 // 		SumCol = curCol;
 // 		ws->merge(curRow, curCol, curRow + 1, curCol);
 // 		ws->label(curRow, curCol, inData.totalTitle);
 // 
-// 		//ÈôÑÂä†È¢ò
+// 		//∏Ωº”Ã‚
 // 		if (inData.isPlusNode)
 // 		{
 // 			curCol++;
@@ -193,7 +193,7 @@ public:
 // 
 // 		curRow += 2;
 // 
-// 		//ÂßìÂêçË°®
+// 		//–’√˚±Ì
 // 
 // 		cell_t* totalScore = ws->FindCellOrMakeBlank(4 + offsetLine + inData.stuCount, SumCol);
 // 		for (uint32_t i = curRow; i < curRow + inData.stuCount; i++)
@@ -218,20 +218,20 @@ public:
 // 
 // 		curRow += inData.stuCount;
 // 
-// 		//Â§±ÂàÜ
+// 		// ß∑÷
 // 		lossRow = curRow;
 // 		curCol = 0;
 // 		ws->merge(curRow, curCol, curRow + 1, curCol + 1);
-// 		ws->label(curRow, curCol, L"Â§±ÂàÜ");
+// 		ws->label(curRow, curCol, L" ß∑÷");
 // 		actTitle(ws, curRow, curCol, curRow + 1, curCol + 1);
 // 
 // 		curCol = 2;
 // 
 // 
-// 		//Â§±ÂàÜÁªüËÆ°
+// 		// ß∑÷Õ≥º∆
 // 		buildLoss(ws, curRow, curCol, inData.nodeList, inData.stuCount);
 // 
-// 		//Â§±ÂàÜÊÄªÂàÜ
+// 		// ß∑÷◊‹∑÷
 // 		ws->merge(curRow, curCol, curRow + 1, curCol);
 // 		expression_node_t * losFunc = buildFuncSum(ws, /*curRow, curCol,*/ curRow, 2, curRow, curCol - 1);
 // 		ws->formula(curRow, curCol, losFunc, true);
@@ -250,25 +250,25 @@ public:
 // 		ws->colwidth(1, 12 * 256);
 // 
 // 
-// 		//Â∞èÈ¢òÂçïÈ°πÂàÜÊï∞
+// 		//–°Ã‚µ•œÓ∑÷ ˝
 // 		{
 // 			curRow += offsetLine;
 // 			curCol = 1;
-// 			ws->label(curRow, 1, L"Â§ßÈ¢ò");
-// 			ws->label(curRow + 1, 1, L"Â∞èÈ¢ò");
-// 			ws->label(curRow + 2, 1, L"ÂçïÈ°πÊÄªÂàÜ");
+// 			ws->label(curRow, 1, L"¥ÛÃ‚");
+// 			ws->label(curRow + 1, 1, L"–°Ã‚");
+// 			ws->label(curRow + 2, 1, L"µ•œÓ◊‹∑÷");
 // 
 // 			curCol += 1;
 // 			buildTitle(ws, curRow, curCol, inData.nodeList);
 // 
 // 			actEdit(ws, curRow + 2, 2, curRow + 2, curCol);
 // 
-// 			//ËØïÂç∑ÊÄªÂàÜ
+// 			// ‘æÌ◊‹∑÷
 // 			SumCol = curCol;
 // 			ws->merge(curRow, curCol, curRow + 1, curCol);
 // 			ws->label(curRow, curCol, inData.totalTitle);
 // 
-// 			//ÈôÑÂä†È¢òÊÄªÂàÜ
+// 			//∏Ωº”Ã‚◊‹∑÷
 // 			if (inData.isPlusNode)
 // 			{
 // 				curCol++;
@@ -289,7 +289,7 @@ public:
 // 			actTitle(ws, curRow, 1, curRow + 1, curCol);
 // 
 // 
-// 			//ÊÄªÂàÜ
+// 			//◊‹∑÷
 // 			curRow += 2;
 // 			curCol = SumCol;
 // 			expression_node_t * totalFunc = buildFuncSum(ws, curRow, 2, curRow, curCol - 1);
@@ -308,36 +308,36 @@ public:
 // 			}
 // 		}
 // 
-// 		//‰∏¢ÂàÜÁªüËÆ°
+// 		//∂™∑÷Õ≥º∆
 // 		{
 // 			curRow += 2;
 // 			curCol = 1;
-// 			ws->label(curRow, 1, L"Â∫îÂæóÂàÜ");
-// 			ws->label(curRow + 1, 1, L"ÂÆûÂæóÂàÜ");
-// 			ws->label(curRow + 2, 1, L"ÂæóÂàÜÁéá");
+// 			ws->label(curRow, 1, L"”¶µ√∑÷");
+// 			ws->label(curRow + 1, 1, L" µµ√∑÷");
+// 			ws->label(curRow + 2, 1, L"µ√∑÷¬ ");
 // 
 // 			actTitle(ws, curRow, 1, curRow + 2, 1);
 // 
 // 			curCol += 1;
-// 			//ÂçïÈ°π
+// 			//µ•œÓ
 // 			for (MatchNodes::const_iterator iter = inData.nodeList.begin(); iter != inData.nodeList.end(); iter++)
 // 			{
 // 				for (uint32_t i = 0; i < iter->nodeCount; i++)
 // 				{
-// 					//Â∫îÂæóÂàÜ
+// 					//”¶µ√∑÷
 // 					cell_t *oneTotal = ws->FindCellOrMakeBlank(curRow - 2, curCol + i);
 // 					expression_node_t *totalFunc = maker.op(xlslib_core::OP_MUL, maker.integer((signed32_t)inData.stuCount), maker.cell(*oneTotal, CELL_RELATIVE_A1, CELLOP_AS_VALUE));
 // 
 // 					ws->formula(curRow, curCol + i, totalFunc, true);
 // 
-// 					//ÂÆûÂæóÂàÜ
+// 					// µµ√∑÷
 // 					cell_t *totalScore = ws->FindCellOrMakeBlank(curRow, curCol + i);
 // 					cell_t *totalLoss = ws->FindCellOrMakeBlank(lossRow, curCol + i);
 // 					expression_node_t *actScore = maker.op(xlslib_core::OP_SUB, maker.cell(*totalScore, CELL_RELATIVE_A1, CELLOP_AS_VALUE), maker.cell(*totalLoss, CELL_RELATIVE_A1, CELLOP_AS_VALUE));
 // 
 // 					ws->formula(curRow + 1, curCol + i, actScore, true);
 // 
-// 					//ÂæóÂàÜÁéá
+// 					//µ√∑÷¬ 
 // 					cell_t *realScore = ws->FindCellOrMakeBlank(curRow + 1, curCol + i);
 // 					expression_node_t *scorePercent = maker.op(xlslib_core::OP_DIV, maker.cell(*realScore, CELL_RELATIVE_A1, CELLOP_AS_VALUE), maker.cell(*totalScore, CELL_RELATIVE_A1, CELLOP_AS_VALUE));
 // 
@@ -348,22 +348,22 @@ public:
 // 				curCol += iter->nodeCount;
 // 			}
 // 
-// 			//ÊÄªÂàÜ
+// 			//◊‹∑÷
 // 			{
-// 				//Â∫îÂæóÂàÜ
+// 				//”¶µ√∑÷
 // 				cell_t *oneTotal = ws->FindCellOrMakeBlank(curRow - 2, curCol);
 // 				expression_node_t *totalFunc = maker.op(xlslib_core::OP_MUL, maker.integer((signed32_t)inData.stuCount), maker.cell(*oneTotal, CELL_RELATIVE_A1, CELLOP_AS_VALUE));
 // 
 // 				ws->formula(curRow, curCol, totalFunc, true);
 // 
-// 				//ÂÆûÂæóÂàÜ
+// 				// µµ√∑÷
 // 				cell_t *totalScore = ws->FindCellOrMakeBlank(curRow, curCol);
 // 				cell_t *totalLoss = ws->FindCellOrMakeBlank(lossRow, curCol);
 // 				expression_node_t *actScore = maker.op(xlslib_core::OP_SUB, maker.cell(*totalScore, CELL_RELATIVE_A1, CELLOP_AS_VALUE), maker.cell(*totalLoss, CELL_RELATIVE_A1, CELLOP_AS_VALUE));
 // 
 // 				ws->formula(curRow + 1, curCol, actScore, true);
 // 
-// 				//ÂæóÂàÜÁéá
+// 				//µ√∑÷¬ 
 // 				cell_t *realScore = ws->FindCellOrMakeBlank(curRow + 1, curCol);
 // 				expression_node_t *scorePercent = maker.op(xlslib_core::OP_DIV, maker.cell(*realScore, CELL_RELATIVE_A1, CELLOP_AS_VALUE), maker.integer(inData.stuCount));
 // 
@@ -373,24 +373,24 @@ public:
 // 
 // 			}
 // 
-// 			//ÈôÑÂä†ÂàÜ
+// 			//∏Ωº”∑÷
 // 			if (inData.isPlusNode)
 // 			{
 // 				curCol += 1;
 // 
-// 				//Â∫îÂæóÂàÜ
+// 				//”¶µ√∑÷
 // 				cell_t *oneTotal = ws->FindCellOrMakeBlank(curRow - 2, curCol);
 // 				expression_node_t *totalFunc = maker.op(xlslib_core::OP_MUL, maker.integer((signed32_t)inData.stuCount), maker.cell(*oneTotal, CELL_RELATIVE_A1, CELLOP_AS_VALUE));
 // 
 // 				ws->formula(curRow, curCol, totalFunc, true);
 // 
-// 				//ÂÆûÂæóÂàÜ
+// 				// µµ√∑÷
 // 				cell_t *totalScore = ws->FindCellOrMakeBlank(curRow, curCol);
 // 				expression_node_t *actScore = buildFuncSum(ws, 2, curCol, 2 + inData.stuCount - 1, curCol);
 // 
 // 				ws->formula(curRow + 1, curCol, actScore, true);
 // 
-// 				//ÂæóÂàÜÁéá
+// 				//µ√∑÷¬ 
 // 				cell_t *realScore = ws->FindCellOrMakeBlank(curRow + 1, curCol);
 // 				expression_node_t *scorePercent = maker.op(xlslib_core::OP_DIV, maker.cell(*realScore, CELL_RELATIVE_A1, CELLOP_AS_VALUE), maker.integer(inData.stuCount));
 // 
@@ -402,19 +402,19 @@ public:
 // 				{
 // 					curCol += 1;
 // 
-// 					//Â∫îÂæóÂàÜ
+// 					//”¶µ√∑÷
 // 					cell_t *oneTotal = ws->FindCellOrMakeBlank(curRow - 2, curCol);
 // 					expression_node_t *totalFunc = maker.op(xlslib_core::OP_MUL, maker.integer((signed32_t)inData.stuCount), maker.cell(*oneTotal, CELL_RELATIVE_A1, CELLOP_AS_VALUE));
 // 
 // 					ws->formula(curRow, curCol, totalFunc, true);
 // 
-// 					//ÂÆûÂæóÂàÜ
+// 					// µµ√∑÷
 // 					cell_t *totalScore = ws->FindCellOrMakeBlank(curRow, curCol);
 // 					expression_node_t *actScore = buildFuncSum(ws, 2, curCol, 2 + inData.stuCount - 1, curCol);
 // 
 // 					ws->formula(curRow + 1, curCol, actScore, true);
 // 
-// 					//ÂæóÂàÜÁéá
+// 					//µ√∑÷¬ 
 // 					cell_t *realScore = ws->FindCellOrMakeBlank(curRow + 1, curCol);
 // 					expression_node_t *scorePercent = maker.op(xlslib_core::OP_DIV, maker.cell(*realScore, CELL_RELATIVE_A1, CELLOP_AS_VALUE), maker.integer(inData.stuCount));
 // 
@@ -480,7 +480,7 @@ private:
 
 // 	void buildTitle(worksheet* ws, uint32_t &curRow, uint32_t &curCol, const MatchNodes &nodeList)
 // 	{
-// 		//È¢òÁõÆË°®
+// 		//Ã‚ƒø±Ì
 // 		for (MatchNodes::const_iterator iter = nodeList.begin(); iter != nodeList.end(); iter++)
 // 		{
 // 			if (iter->nodeCount > 1)
@@ -512,7 +512,7 @@ private:
 
 	void buildLoss(worksheet* ws, uint32_t &curRow, uint32_t &curCol, const MatchNodes &nodeList, uint32_t stuCount)
 	{
-		//È¢òÁõÆË°®
+		//Ã‚ƒø±Ì
 		for (MatchNodes::const_iterator iter = nodeList.begin(); iter != nodeList.end(); iter++)
 		{
 			if (iter->nodeCount > 1)

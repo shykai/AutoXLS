@@ -66,6 +66,22 @@ private:
 
 struct struExcelAera
 {
+	struExcelAera()
+	{
+
+	}
+
+	struExcelAera(uint32_t row1, uint32_t col1,
+		uint32_t row2, uint32_t col2)
+	{
+		firstRow = row1;
+		firstCol = col1;
+
+		lastRow = row2;
+		lastCol = col2;
+	}
+
+
 	uint32_t firstRow, firstCol;
 	uint32_t lastRow, lastCol;
 
@@ -93,8 +109,6 @@ public:
 
 	virtual ~ExcelArea()
 	{
-		build(AeraManager::instance()->getWS(), AeraManager::instance()->getMaker(), AeraManager::instance()->getWB());
-		act(AeraManager::instance()->getWS());
 	}
 
 	virtual void build(worksheet* ws, expression_node_factory_t& maker, workbook* wb) = 0;
@@ -115,6 +129,12 @@ public:
 		:ExcelArea(row1, col1, row1 + 2, col1 + colCount - 1)
 	{
 
+	}
+
+	~TitleAera()
+	{
+		build(AeraManager::instance()->getWS(), AeraManager::instance()->getMaker(), AeraManager::instance()->getWB());
+		act(AeraManager::instance()->getWS());
 	}
 
 	void init(const std::wstring& calssName, const MatchNodes& nodeList, const MatchClassType& classType)
@@ -191,6 +211,12 @@ public:
 
 	}
 
+	~InputArea()
+	{
+		build(AeraManager::instance()->getWS(), AeraManager::instance()->getMaker(), AeraManager::instance()->getWB());
+		act(AeraManager::instance()->getWS());
+	}
+
 	virtual void build(worksheet* ws, expression_node_factory_t& maker, workbook* wb) {};
 	virtual void act(worksheet* ws)
 	{
@@ -261,6 +287,12 @@ public:
 
 	}
 
+	~ScoreSumArea()
+	{
+		build(AeraManager::instance()->getWS(), AeraManager::instance()->getMaker(), AeraManager::instance()->getWB());
+		act(AeraManager::instance()->getWS());
+	}
+
 	virtual void build(worksheet* ws, expression_node_factory_t& maker, workbook* wb)
 	{
 		//TODO
@@ -268,7 +300,15 @@ public:
 
 	virtual void act(worksheet* ws)
 	{
-		//TODO
+		range* titleRange = ws->rangegroup(firstRow, firstCol, lastRow, lastCol);
+		titleRange->fillstyle(FILL_SOLID);
+		titleRange->fillfgcolor((color_name_t)17);
+		titleRange->borderstyle(BORDER_BOTTOM, BORDER_THIN);
+		titleRange->borderstyle(BORDER_TOP, BORDER_THIN);
+		titleRange->borderstyle(BORDER_LEFT, BORDER_THIN);
+		titleRange->borderstyle(BORDER_RIGHT, BORDER_THIN);
+
+		titleRange->locked(true);
 	}
 
 };
@@ -287,6 +327,12 @@ public:
 	{
 		_nodeLists = nodeList;
 		_totalScoreRow = totalScoreRow;
+	}
+
+	~LossSumAera()
+	{
+		build(AeraManager::instance()->getWS(), AeraManager::instance()->getMaker(), AeraManager::instance()->getWB());
+		act(AeraManager::instance()->getWS());
 	}
 
 	virtual void build(worksheet* ws, expression_node_factory_t& maker, workbook* wb)
@@ -323,7 +369,15 @@ public:
 
 	virtual void act(worksheet* ws)
 	{
-		//TODO
+		range* titleRange = ws->rangegroup(firstRow, firstCol, lastRow, lastCol);
+		titleRange->fillstyle(FILL_SOLID);
+		titleRange->fillfgcolor((color_name_t)17);
+		titleRange->borderstyle(BORDER_BOTTOM, BORDER_THIN);
+		titleRange->borderstyle(BORDER_TOP, BORDER_THIN);
+		titleRange->borderstyle(BORDER_LEFT, BORDER_THIN);
+		titleRange->borderstyle(BORDER_RIGHT, BORDER_THIN);
+
+		titleRange->locked(true);
 	}
 
 private:
@@ -356,6 +410,12 @@ public:
 
 	}
 
+	~LossTotalAera()
+	{
+		build(AeraManager::instance()->getWS(), AeraManager::instance()->getMaker(), AeraManager::instance()->getWB());
+		act(AeraManager::instance()->getWS());
+	}
+
 	virtual void build(worksheet* ws, expression_node_factory_t& maker, workbook* wb)
 	{
 
@@ -363,7 +423,15 @@ public:
 
 	virtual void act(worksheet* ws)
 	{
-		//TODO
+		range* titleRange = ws->rangegroup(firstRow, firstCol, lastRow, lastCol);
+		titleRange->fillstyle(FILL_SOLID);
+		titleRange->fillfgcolor((color_name_t)17);
+		titleRange->borderstyle(BORDER_BOTTOM, BORDER_THIN);
+		titleRange->borderstyle(BORDER_TOP, BORDER_THIN);
+		titleRange->borderstyle(BORDER_LEFT, BORDER_THIN);
+		titleRange->borderstyle(BORDER_RIGHT, BORDER_THIN);
+
+		titleRange->locked(true);
 	}
 
 };
@@ -373,14 +441,24 @@ class StaticsAera : public ExcelArea
 public:
 	StaticsAera(const LossSumAera& _lostSum, uint32_t rowTotalScore)
 		:ExcelArea(rowTotalScore +2, _lostSum.firstCol, rowTotalScore + 4, _lostSum.lastCol)
+		,_rowTotalScore(rowTotalScore)
+		, _rowLossScore(_lostSum.firstRow)
 	{
 
 	}
 
 	StaticsAera(const LossTotalAera& _lostTotal, uint32_t rowTotalScore)
 		:ExcelArea(rowTotalScore + 2, _lostTotal.firstCol, rowTotalScore + 4, _lostTotal.lastCol)
+		,_rowTotalScore(rowTotalScore)
+		, _rowLossScore(_lostTotal.firstRow)
 	{
 
+	}
+
+	~StaticsAera()
+	{
+		build(AeraManager::instance()->getWS(), AeraManager::instance()->getMaker(), AeraManager::instance()->getWB());
+		act(AeraManager::instance()->getWS());
 	}
 
 	void init(uint32_t stuCount)
@@ -419,7 +497,15 @@ public:
 
 	virtual void act(worksheet* ws)
 	{
-		//TODO
+		range* titleRange = ws->rangegroup(firstRow, firstCol, lastRow, lastCol);
+		titleRange->fillstyle(FILL_SOLID);
+		titleRange->fillfgcolor((color_name_t)17);
+		titleRange->borderstyle(BORDER_BOTTOM, BORDER_THIN);
+		titleRange->borderstyle(BORDER_TOP, BORDER_THIN);
+		titleRange->borderstyle(BORDER_LEFT, BORDER_THIN);
+		titleRange->borderstyle(BORDER_RIGHT, BORDER_THIN);
+
+		titleRange->locked(true);
 	}
 
 private:
